@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIMS FOREX EXCHANGE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color:#d66fa9;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            background-image: url('https://images.wallpapersden.com/image/download/orange-layers-hd-abstract-colors_bmZpZWyUmZqaraWkpJRmbmdlrWZlbWU.jpg');
+            background-size: 100%;
+            background-repeat: no-repeat;
+        }
+        h1, h2 {
+            margin-bottom: 10px;
+            color: #024950;
+        }
+        #currencies, #portfolio {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .currency {
+            padding: 15px;
+            background: #024950;
+            border-radius: 10px;
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+            width: 180px;
+            font-size: 14px;
+            text-align: center;
+            transition: transform 0.3s;
+            color: white;
+        }
+        .currency:hover {
+            transform: scale(1.05);
+        }
+        button {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .buy-button { background-color: #27ae60; color: white; }
+        .sell-button { background-color: #c0392b; color: white; }
+        .buy-button:hover { background-color: #219150; }
+        .sell-button:hover { background-color: #a93226; }
+        #fluctuateButton { background-color: #3c3427; font-size: 16px; padding: 10px 20px; color: white; }
+        #fluctuateButton:hover { background-color: #e67e22; }
+        #portfolioValue { font-size: 36px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1 style="font-family: Aquire;">💱 RIMS FOREX EXCHANGE (RFE)</h1>
+    <h2 id="balance">Balance: 10,000 RD</h2>
+    <h3>Select Currency</h3>
+    <div id="currencies"></div>
+    
+    <h2>Portfolio</h2>
+    <div id="portfolio"></div>
+    <h3>Total Portfolio Value: <span id="portfolioValue"></span> RD</h3>
+
+    <h2>Market Fluctuations 📉📈</h2>
+    <button id="fluctuateButton" onclick="fluctuateMarket()">Trigger Market Fluctuations</button>
+    <h3>Attempts Left: <span id="attempts">3</span></h3>
+
+    <script>
+        let currencies = [
+            { symbol: "USD", name: "US Dollar", price: 65, owned: 0 },
+            { symbol: "EURO", name: "Euro", price: 85, owned: 0 },
+            { symbol: "YEN", name: "Japanese Yen", price: 40, owned: 0 },
+            { symbol: "GBP", name: "UK Pound", price: 95, owned: 0 },
+            { symbol: "AUD", name: "Australian Dollar", price: 50, owned: 0 },
+            { symbol: "AED", name: "UAE Dirham", price: 15, owned: 0 }
+        ];
+        
+        let balance = 10000;
+        let attempts = 3;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderCurrencies();
+            updateBalance();
+            setInterval(updateExchangeRates, 2000);
+        });
+
+        function renderCurrencies() {
+            let currencyContainer = document.getElementById("currencies");
+            currencyContainer.innerHTML = "";
+            currencies.forEach((currency, index) => {
+                currencyContainer.innerHTML += `
+                    <div class="currency">
+                        <h3>${currency.name} (${currency.symbol})</h3>
+                        <p>Rate: ${currency.price.toFixed(2)} RD</p>
+                        <p>Owned: ${currency.owned}</p>
+                        <button class="buy-button" onclick="buyCurrency(${index})">Buy</button>
+                    </div>
+                `;
+            });
+        }
+
+        function renderPortfolio() {
+            let portfolioContainer = document.getElementById("portfolio");
+            portfolioContainer.innerHTML = "";
+            let totalValue = 0;
+            currencies.forEach((currency, index) => {
+                if (currency.owned > 0) {
+                    let currencyValue = currency.owned * currency.price;
+                    totalValue += currencyValue;
+                    portfolioContainer.innerHTML += `
+                        <div class="currency">
+                            <h3>${currency.name} (${currency.symbol})</h3>
+                            <p>Owned: ${currency.owned}</p>
+                            <p>Total Value: ${currencyValue.toFixed(2)} RD</p>
+                            <button class="sell-button" onclick="sellCurrency(${index})">Sell</button>
+                        </div>
+                    `;
+                }
+            });
+            document.getElementById("portfolioValue").innerText = totalValue.toFixed(2);
+        }
+
+        function updateBalance() {
+            document.getElementById("balance").innerText = `Balance: ${balance} RD`;
+        }
+
+        function buyCurrency(index) {
+            let currency = currencies[index];
+            if (balance >= currency.price) {
+                currency.owned++;
+                balance -= currency.price;
+                renderCurrencies();
+                renderPortfolio();
+                updateBalance();
+            } else {
+                alert("Not enough balance!");
+            }
+        }
+
+        function sellCurrency(index) {
+            let currency = currencies[index];
+            if (currency.owned > 0) {
+                currency.owned--;
+                balance += currency.price;
+                renderCurrencies();
+                renderPortfolio();
+                updateBalance();
+            } else {
+                alert("You do not own any of this currency!");
+            }
+        }
+
+        function updateExchangeRates() {
+            let percentageChanges = [0.5, 1, 1.5, -0.5, -1, -1.5];
+            currencies.forEach(currency => {
+                let change = (currency.price * percentageChanges[Math.floor(Math.random() * percentageChanges.length)]) / 100;
+                currency.price += change;
+            });
+            renderCurrencies();
+            renderPortfolio();
+        }
+
+        function fluctuateMarket() {
+            if (attempts > 0) {
+                let fluctuationRates = [5, 10, 15, -5, -10, -15];
+                currencies.forEach(currency => {
+                    let change = (currency.price * fluctuationRates[Math.floor(Math.random() * fluctuationRates.length)]) / 100;
+                    currency.price += change;
+                });
+                renderCurrencies();
+                renderPortfolio();
+                attempts--;
+                document.getElementById("attempts").innerText = attempts;
+            }
+        }
+    </script>
+</body>
+</html>
